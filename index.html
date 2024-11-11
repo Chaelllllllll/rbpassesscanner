@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Gamepasses</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-size: 1.125rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+        }
+
+        .form-control:focus {
+            border-color: #555;
+            box-shadow: none;
+        }
+
+        
+
+        .gamepass-item {
+            background-color: #333;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .gamepass-item:hover {
+            background-color: #444;
+        }
+
+        .copy-btn {
+            cursor: pointer;
+            font-size: 1.125rem;
+            color: #28a745;
+            background: none;
+            border: none;
+        }
+
+        .copy-btn:hover {
+            color: #218838;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1050;
+        }
+
+        .notification.show {
+            display: block;
+            animation: fadeInOut 3s forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+        }
+
+        .close {
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .profile-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-info img {
+            border-radius: 50%;
+            width: 200px;
+            height: 200px;
+        }
+
+        .gamepasses-list {
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Gamepass Scanner</h2>
+        <p class="text-right mr-3 text-warning" style="font-size: 20px;"><i><a class="text-warning" href="https://www.facebook.com/chaelyoooo/">@chael</a></i></p>
+
+        <div class="input-group">
+            <input type="text" id="usernameOrId" class="form-control" placeholder="Enter Roblox User ID (ex: 4736662830)" />
+        </div>
+
+        <button class="btn btn-warning w-100" onclick="getGamepasses()">Scan</button>
+        <hr class="bg-warning" style="height: 2px; border: none; margin: 1.5rem 0;" />
+        <p style="font-size: 20px;">Go to <a class="text-warning" href="https://www.roblox.com/games/17486120615/PINOY-Pinoise-Tambayan">Pinoise Tambayan</a></p>
+
+        <div id="alertMessage" class="alert alert-danger mt-3" style="display: none;"></div>
+    </div>
+
+    <!-- Modal for Profile Info and Gamepasses -->
+    <div class="modal fade" id="gamepassesModal" tabindex="-1" role="dialog" aria-labelledby="gamepassesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="gamepassesModalLabel">Information</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Profile Info Section -->
+                    <div id="profileInfo" class="profile-info" style="display: none;">
+                        <img id="profilePic" src="" alt="Profile Picture">
+                        <p><strong></strong> <a class="text-warning" href="" id="profileId"></a></p>
+                    </div>
+
+                    <!-- Gamepasses List Section -->
+                    <div class="gamepasses-list" id="gamepassesList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Notification element -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        async function getUserIdFromUsername(username) {
+            try {
+                const response = await fetch(`https://users.roblox.com/v1/users/search?keyword=${username}`);
+                const data = await response.json();
+                
+                if (data.data && data.data.length > 0) {
+                    return data.data[0].id;
+                } else {
+                    showAlert('User not found');
+                    return null;
+                }
+            } catch (error) {
+                showAlert('Error fetching user ID');
+                console.error(error);
+                return null;
+            }
+        }
+
+        function showAlert(message) {
+            const alertMessage = document.getElementById('alertMessage');
+            alertMessage.style.display = 'block';
+            alertMessage.textContent = message;
+        }
+
+        async function getGamepasses() {
+            const usernameOrId = document.getElementById('usernameOrId').value.trim();
+            if (!usernameOrId) {
+                showAlert('Please enter a User ID (ex: 4736662830)');
+                return;
+            }
+
+            let userId = usernameOrId;
+            if (isNaN(userId)) {
+                userId = await getUserIdFromUsername(usernameOrId);
+                if (!userId) return;
+            }
+
+            await fetchUserProfile(userId);
+
+            const gamepassesList = document.getElementById('gamepassesList');
+            gamepassesList.innerHTML = '';
+
+            let pageNumber = 1;
+            let gamepasses = new Set();
+            let creatorName = ''; // Variable to store the Creator's name
+
+            // Function to recursively fetch all gamepasses
+            const fetchGamepasses = async (page) => {
+                const url = `https://www.roproxy.com/users/inventory/list-json?assetTypeId=34&cursor=&itemsPerPage=100&pageNumber=${page}&userId=${userId}`;
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data && data.Data && data.Data.Items) {
+                        const items = data.Data.Items;
+    
+                        // Loop through items and add the gamepass if created by the user
+                        items.forEach((gamepass) => {
+                            if (gamepass.Creator.Id == userId && !gamepasses.has(gamepass.Item.AssetId)) {
+                                gamepasses.add(gamepass.Item.AssetId);
+                                creatorName = gamepass.Creator.Name; // Set creator's name
+                                const listItem = document.createElement('div');
+                                listItem.classList.add('gamepass-item');
+                                listItem.innerHTML = `
+                                    <div>
+                                        <strong>Name:</strong> <a class='text-warning' href="https://www.roblox.com/game-pass/${gamepass.Item.AssetId}" target="_blank">${gamepass.Item.Name}</a> <br>
+                                        <strong>ID:</strong> ${gamepass.Item.AssetId} 
+                                        <span class="copy-icon" onclick="copyToClipboard(${gamepass.Item.AssetId})">📋</span>
+                                        
+                                    </div>
+                                `;
+                                gamepassesList.appendChild(listItem);
+                            }
+                        });
+    
+                        // If there are more pages, fetch the next page
+                        if (data.Data.Items.length > 0) {
+                            fetchGamepasses(page + 1);
+                        } else {
+                            // When done fetching, set the profile name using the creator's name
+                            fetchUserProfile(userId, creatorName);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching gamepasses:', error);
+                    showAlert('Error fetching gamepasses');
+                }
+            };
+    
+            // Start fetching gamepasses from page 1
+            fetchGamepasses(pageNumber);
+        }
+        
+        async function fetchUserProfile(userId, creatorName) {
+            try {
+                const response = await fetch(`https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${userId}&size=720x720&format=Png&isCircular=false`);
+                const data = await response.json();
+                if (data && data.data && data.data.length > 0) {
+                    // Access the imageUrl from the response and set it to the profilePic element
+                    const profile = data.data[0];
+                    document.getElementById('profilePic').src = profile.imageUrl;
+                    document.getElementById('profileId').textContent = userId;
+                    document.getElementById('profileId').href = `https://www.roblox.com/users/${userId}/profile`; // Use backticks for template literal
+                    document.getElementById('profileInfo').style.display = 'block';
+                    // Show the modal
+                    $('#gamepassesModal').modal('show');
+                }
+            } catch (error) {
+                console.error('Error fetching user profile:', error);
+                showAlert('Error fetching user profile');
+            }
+        }
+        
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Copied to clipboard!');
+            }).catch((err) => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
